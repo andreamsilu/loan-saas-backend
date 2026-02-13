@@ -122,11 +122,6 @@ class Phase2FlowTest extends TestCase
             ->postJson("/api/loan/loans/{$loanA['id']}/repay", [
                 'amount' => 1000,
             ]);
-        
-        if ($response->status() !== 200) {
-            dump($response->json());
-        }
-        
         $response->assertStatus(200);
         $this->assertEquals(1000, $response->json('loan.total_paid'));
         $this->assertEquals('stripe', $response->json('loan.repayment_schedule.0.status') === 'paid' ? 'stripe' : 'stripe'); // Logic check

@@ -30,7 +30,7 @@ class RepaymentService
         $gatewayName = $tenant->settings['payment_gateway'] ?? 'stripe';
         $gateway = PaymentGatewayFactory::make($gatewayName);
 
-        return DB::transaction(function () use ($loan, $amount, $paymentDetails, $gateway) {
+        return DB::transaction(function () use ($loan, $amount, $paymentDetails, $gateway, $gatewayName) {
             $result = $gateway->process($amount, $paymentDetails);
 
             if (!$result['success']) {
