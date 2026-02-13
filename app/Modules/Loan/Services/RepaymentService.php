@@ -9,6 +9,8 @@ use App\Modules\Tenant\Models\Tenant;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
+use App\Modules\Loan\Events\RepaymentReceived;
+
 class RepaymentService
 {
     protected $transactionService;
@@ -57,6 +59,8 @@ class RepaymentService
 
             // Update repayment schedule (mark installments as paid)
             $this->updateScheduleAfterPayment($loan, $amount);
+
+            event(new RepaymentReceived($loan, $amount));
 
             return [
                 'loan' => $loan,
