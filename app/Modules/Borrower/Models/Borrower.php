@@ -14,7 +14,19 @@ class Borrower extends Model
         'tenant_id',
         'first_name',
         'last_name',
+        'id_number',
         'email',
         'phone',
+        'status',
+        'metadata',
     ];
+
+    protected $casts = [
+        'metadata' => 'array',
+    ];
+
+    public function isBlacklisted(): bool
+    {
+        return $this->status === 'blacklisted';
+    }
 }

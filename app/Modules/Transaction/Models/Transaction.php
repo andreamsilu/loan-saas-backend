@@ -15,8 +15,19 @@ class Transaction extends Model
     protected $fillable = [
         'tenant_id',
         'loan_id',
+        'transaction_number',
         'amount',
         'type',
+        'payment_method',
+        'reference',
+        'metadata',
+        'transaction_date',
+    ];
+
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'metadata' => 'array',
+        'transaction_date' => 'datetime',
     ];
 
     public function loan(): BelongsTo
