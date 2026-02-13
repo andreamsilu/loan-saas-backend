@@ -1,8 +1,21 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\File;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Dynamically load module routes
+$modulesPath = app_path('Modules');
+if (File::exists($modulesPath)) {
+    $modules = File::directories($modulesPath);
+
+    foreach ($modules as $modulePath) {
+        $moduleName = basename($modulePath);
+        $routeFile = $modulePath . '/Routes/api.php';
+
+        if (File::exists($routeFile)) {
+            Route::prefix(strtolower($moduleName))
+                ->middleware(['api', 'tenant'])
+                ->group($routeFile);
+        }
+    }
+}

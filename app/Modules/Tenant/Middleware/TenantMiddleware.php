@@ -23,11 +23,20 @@ class TenantMiddleware
             $tenant = Tenant::find($request->header('X-Tenant-ID'));
         }
 
-        // 2. Resolve from subdomain if not found
+        // 2. Resolve from custom domain
         if (!$tenant) {
             $host = $request->getHost();
-            $subdomain = explode('.', $host)[0];
-            $tenant = Tenant::where('subdomain', $subdomain)->first();
+            $tenant = Tenant::where('domain', $host)->first();
+        }
+
+        // 3. Resolve from subdomain if not found
+        if (!$tenant) {
+            $host = $request->getHost();
+            $parts = explode('.', $host);
+            if (count($parts) > 2) {
+                $subdomain = $parts[0];
+                $tenant = Tenant::where('subdomain', $subdomain)->first();
+            }
         }
 
         if (!$tenant || !$tenant->is_active) {

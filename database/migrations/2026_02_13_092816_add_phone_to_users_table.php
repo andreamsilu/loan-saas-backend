@@ -12,7 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->foreignId('tenant_id')->after('id')->nullable()->constrained()->onDelete('cascade');
+            $table->string('phone')->nullable()->after('email');
+            $table->unique(['tenant_id', 'phone']);
         });
     }
 
@@ -22,8 +23,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropForeign(['tenant_id']);
-            $table->dropColumn('tenant_id');
+            $table->dropUnique(['tenant_id', 'phone']);
+            $table->dropColumn('phone');
         });
     }
 };
