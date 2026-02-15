@@ -7,6 +7,8 @@ use App\Modules\Subscription\Models\Plan;
 use App\Modules\Subscription\Models\Subscription;
 use App\Modules\Tenant\Models\Tenant;
 use App\Modules\Audit\Services\AuditService;
+use App\Modules\User\Models\User;
+use App\Shared\Enums\UserRole;
 use Illuminate\Http\Request;
 
 class OwnerTenantController extends Controller
@@ -21,6 +23,46 @@ class OwnerTenantController extends Controller
     public function index()
     {
         return response()->json(Tenant::with(['subscription.plan'])->get());
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'subdomain' => 'nullable|string|max:255|unique:tenants,subdomain',
+            'domain' => 'nullable|string|max:255|unique:tenants,domain',
+            'is_active' => 'sometimes|boolean',
+            'settings' => 'sometimes|array',
+            'admin_name' => 'required|string|max:255',
+            'admin_email' => 'required|email|max:255|unique:users,email',
+            'admin_password' => 'required|string|min:8',
+        ]);
+
+        $tenant = Tenant::create([
+            'name' => $data['name'],
+            'subdomain' => $data['subdomain'] ?? null,
+            'domain' => $data['domain'] ?? null,
+            'is_active' => $data['is_active'] ?? true,
+            'settings' => $data['settings'] ?? [],
+        ]);
+
+        $admin = User::create([
+            'tenant_id' => $tenant->id,
+            'name' => $data['admin_name'],
+            'email' => $data['admin_email'],
+            'password' => bcrypt($data['admin_password']),
+            'role' => UserRole::TENANT_ADMIN,
+        ]);
+
+        $this->audit->record('tenant.created', [
+            'entity_type' => 'tenant',
+            'entity_id' => $tenant->id,
+        ]);
+
+        return response()->json([
+            'tenant' => $tenant,
+            'admin' => $admin,
+        ], 201);
     }
 
     public function setPlan(Request $request, Tenant $tenant)
@@ -81,6 +123,33 @@ class OwnerTenantController extends Controller
             'entity_type' => 'tenant',
             'entity_id' => $tenant->id,
         ]);
+        return response()->json(['ok' => true]);
+    }
+
+    public function resetCredentials(Request $request, Tenant $tenant)
+    {
+        $data = $request->validate([
+            'password' => 'required|string|min:8',
+        ]);
+
+        $admin = User::where('tenant_id', $tenant->id)
+            ->where('role', UserRole::TENANT_ADMIN)
+            ->orderBy('id')
+            ->first();
+
+        if (!$admin) {
+            return response()->json(['message' => 'Tenant admin not found'], 404);
+        }
+
+        $admin->password = bcrypt($data['password']);
+        $admin->save();
+
+        $this->audit->record('tenant.credentials.reset', [
+            'entity_type' => 'tenant',
+            'entity_id' => $tenant->id,
+            'meta' => ['admin_id' => $admin->id],
+        ]);
+
         return response()->json(['ok' => true]);
     }
 

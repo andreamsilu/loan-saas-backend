@@ -13,6 +13,7 @@ Route::middleware(['auth:sanctum', 'role:' . UserRole::TENANT_ADMIN->value . ','
 Route::middleware(['auth:sanctum', 'role:' . UserRole::TENANT_ADMIN->value . ',' . UserRole::OWNER->value])->group(function () {
     Route::post('/settings/branding', [TenantSettingsController::class, 'updateBranding']);
     Route::post('/settings/ui-flags', [TenantSettingsController::class, 'updateUiFlags']);
+    Route::post('/settings/domain', [TenantSettingsController::class, 'updateDomain']);
     Route::post('/subscription/billing-cycle', [TenantSubscriptionController::class, 'updateBillingCycle']);
     Route::get('/subscription/history', [TenantSubscriptionController::class, 'history']);
 });

@@ -3,6 +3,7 @@
 namespace App\Modules\Tenant\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Tenant\Models\Tenant;
 use Illuminate\Http\Request;
 
 class TenantSettingsController extends Controller
@@ -54,5 +55,23 @@ class TenantSettingsController extends Controller
 
         return response()->json($tenant->settings);
     }
-}
 
+    public function updateDomain(Request $request)
+    {
+        $request->validate([
+            'subdomain' => 'nullable|string|max:255|unique:tenants,subdomain,' . auth()->user()->tenant_id,
+            'domain' => 'nullable|string|max:255|unique:tenants,domain,' . auth()->user()->tenant_id,
+        ]);
+
+        $tenant = auth()->user()->tenant;
+        if (!$tenant) {
+            return response()->json(['message' => 'Tenant not found'], 404);
+        }
+
+        $tenant->subdomain = $request->input('subdomain', $tenant->subdomain);
+        $tenant->domain = $request->input('domain', $tenant->domain);
+        $tenant->save();
+
+        return response()->json($tenant);
+    }
+}

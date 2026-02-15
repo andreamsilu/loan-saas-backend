@@ -13,7 +13,7 @@ class WebhookService
 
     public function __construct(TenantManager $tenantManager)
     {
-        this->tenantManager = $tenantManager;
+        $this->tenantManager = $tenantManager;
     }
 
     public function dispatch(string $event, array $payload): void
@@ -80,4 +80,3 @@ class WebhookService
         $endpoint->save();
     }
 }
-
