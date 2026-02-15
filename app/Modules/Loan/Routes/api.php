@@ -6,7 +6,7 @@ use App\Modules\Loan\Controllers\RepaymentController;
 use App\Shared\Enums\UserRole;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth:sanctum', 'subscription'])->group(function () {
     // Loan Product Management (Admin/Owner)
     Route::middleware(['role:' . UserRole::TENANT_ADMIN->value . ',' . UserRole::OWNER->value])->group(function () {
         Route::apiResource('products', LoanProductController::class);
@@ -33,4 +33,3 @@ Route::middleware(['auth:sanctum'])->group(function () {
         });
     });
 });
-

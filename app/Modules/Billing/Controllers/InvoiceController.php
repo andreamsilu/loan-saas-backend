@@ -62,6 +62,14 @@ class InvoiceController extends Controller
 
         $invoice->update($data);
 
+        if ($invoice->subscription_id) {
+            $subscription = $invoice->subscription;
+            if ($subscription && in_array($subscription->status, ['trial', 'suspended', 'expired'], true)) {
+                $subscription->status = 'active';
+                $subscription->save();
+            }
+        }
+
         return response()->json($invoice);
     }
 

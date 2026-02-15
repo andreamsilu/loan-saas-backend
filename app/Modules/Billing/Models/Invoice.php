@@ -5,6 +5,8 @@ namespace App\Modules\Billing\Models;
 use App\Shared\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Modules\Subscription\Models\Subscription;
 
 class Invoice extends Model
 {
@@ -28,5 +30,9 @@ class Invoice extends Model
         'paid_at' => 'datetime',
         'metadata' => 'array',
     ];
-}
 
+    public function subscription(): BelongsTo
+    {
+        return $this->belongsTo(Subscription::class);
+    }
+}

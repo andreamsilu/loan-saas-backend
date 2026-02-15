@@ -14,7 +14,7 @@ if (File::exists($modulesPath)) {
 
         if (File::exists($routeFile)) {
             Route::prefix(strtolower($moduleName))
-                ->middleware(['api', 'tenant'])
+                ->middleware(['api', 'tenant', 'api.limit'])
                 ->group($routeFile);
         }
     }
