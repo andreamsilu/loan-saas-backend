@@ -4,15 +4,15 @@ namespace App\Shared\Services\Payment;
 
 use App\Shared\Interfaces\PaymentGatewayInterface;
 
-class PaypalGateway implements PaymentGatewayInterface
+class HaloPesaGateway implements PaymentGatewayInterface
 {
     public function process(float $amount, array $details): array
     {
-        // Mocking PayPal payment logic
         return [
             'success' => true,
-            'reference' => 'PAYPAL-' . uniqid(),
-            'message' => 'Payment processed successfully via PayPal',
+            'reference' => 'HALOPESA-' . uniqid(),
+            'message' => 'Payment processed via HaloPesa',
         ];
     }
 }
+

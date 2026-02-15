@@ -27,7 +27,7 @@ class RepaymentService
         }
 
         $tenant = auth()->user()->tenant;
-        $gatewayName = $tenant->settings['payment_gateway'] ?? 'stripe';
+        $gatewayName = $tenant->settings['payment_gateway'] ?? 'mpesa';
         $gateway = PaymentGatewayFactory::make($gatewayName);
 
         return DB::transaction(function () use ($loan, $amount, $paymentDetails, $gateway, $gatewayName) {

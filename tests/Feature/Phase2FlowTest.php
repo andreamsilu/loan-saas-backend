@@ -29,7 +29,7 @@ class Phase2FlowTest extends TestCase
         parent::setUp();
 
         // Create Tenant A
-        $this->tenantA = Tenant::create(['name' => 'Tenant A', 'subdomain' => 'tenant-a', 'settings' => ['payment_gateway' => 'stripe']]);
+        $this->tenantA = Tenant::create(['name' => 'Tenant A', 'subdomain' => 'tenant-a', 'settings' => ['payment_gateway' => 'mobile_money']]);
         $this->adminA = User::create([
             'tenant_id' => $this->tenantA->id,
             'name' => 'Admin A',
@@ -40,7 +40,7 @@ class Phase2FlowTest extends TestCase
         $this->tokenA = $this->adminA->createToken('test')->plainTextToken;
 
         // Create Tenant B
-        $this->tenantB = Tenant::create(['name' => 'Tenant B', 'subdomain' => 'tenant-b', 'settings' => ['payment_gateway' => 'paypal']]);
+        $this->tenantB = Tenant::create(['name' => 'Tenant B', 'subdomain' => 'tenant-b', 'settings' => ['payment_gateway' => 'mobile_money']]);
         $this->adminB = User::create([
             'tenant_id' => $this->tenantB->id,
             'name' => 'Admin B',
@@ -124,7 +124,7 @@ class Phase2FlowTest extends TestCase
             ]);
         $response->assertStatus(200);
         $this->assertEquals(1000, $response->json('loan.total_paid'));
-        $this->assertEquals('stripe', $response->json('loan.repayment_schedule.0.status') === 'paid' ? 'stripe' : 'stripe'); // Logic check
+        $this->assertTrue(in_array($response->json('loan.repayment_schedule.0.status'), ['paid','partially_paid']));
 
         // Verify Repayment Transaction for Tenant A
         $this->assertDatabaseHas('transactions', [
@@ -132,7 +132,7 @@ class Phase2FlowTest extends TestCase
             'loan_id' => $loanA['id'],
             'type' => 'repayment',
             'amount' => 1000,
-            'payment_method' => 'stripe',
+            'payment_method' => 'mobile_money',
         ]);
 
         // 7. Check Dashboard for Tenant A

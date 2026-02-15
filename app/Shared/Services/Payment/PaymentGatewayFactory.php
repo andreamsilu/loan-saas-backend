@@ -9,10 +9,16 @@ class PaymentGatewayFactory
 {
     public static function make(string $gateway): PaymentGatewayInterface
     {
-        return match (strtolower($gateway)) {
-            'stripe' => new StripeGateway(),
-            'paypal' => new PaypalGateway(),
-            default => throw new Exception("Unsupported payment gateway: {$gateway}"),
+        $key = strtolower(preg_replace('/[^a-z0-9]+/', '', $gateway));
+        return match ($key) {
+            'mpesa' => new AggregatedMobileMoneyGateway(),
+            'airtelmoney' => new AggregatedMobileMoneyGateway(),
+            'mixxbyyas', 'mixx' => new AggregatedMobileMoneyGateway(),
+            'halopesa' => new AggregatedMobileMoneyGateway(),
+            'mobilemoney' => new AggregatedMobileMoneyGateway(),
+            'aggregator', 'unified', 'mobilemoneyaggregator' => new AggregatedMobileMoneyGateway(),
+            'manual' => new ManualGateway(),
+            default => new ManualGateway(),
         };
     }
 }
