@@ -29,7 +29,19 @@ class Phase2FlowTest extends TestCase
         parent::setUp();
 
         // Create Tenant A
-        $this->tenantA = Tenant::create(['name' => 'Tenant A', 'subdomain' => 'tenant-a', 'settings' => ['payment_gateway' => 'mobile_money']]);
+        $this->tenantA = Tenant::create([
+            'name' => 'Tenant A',
+            'subdomain' => 'tenant-a',
+            'settings' => [
+                'payment_gateway' => 'mobile_money',
+                'payments' => [
+                    'provider_key' => 'aggregator',
+                    'callback_url' => 'https://example.com/callback',
+                    'ipn_url' => 'https://example.com/ipn',
+                    'currency' => 'TZS',
+                ],
+            ],
+        ]);
         $this->adminA = User::create([
             'tenant_id' => $this->tenantA->id,
             'name' => 'Admin A',
@@ -40,7 +52,19 @@ class Phase2FlowTest extends TestCase
         $this->tokenA = $this->adminA->createToken('test')->plainTextToken;
 
         // Create Tenant B
-        $this->tenantB = Tenant::create(['name' => 'Tenant B', 'subdomain' => 'tenant-b', 'settings' => ['payment_gateway' => 'mobile_money']]);
+        $this->tenantB = Tenant::create([
+            'name' => 'Tenant B',
+            'subdomain' => 'tenant-b',
+            'settings' => [
+                'payment_gateway' => 'mobile_money',
+                'payments' => [
+                    'provider_key' => 'aggregator',
+                    'callback_url' => 'https://example.com/callback',
+                    'ipn_url' => 'https://example.com/ipn',
+                    'currency' => 'TZS',
+                ],
+            ],
+        ]);
         $this->adminB = User::create([
             'tenant_id' => $this->tenantB->id,
             'name' => 'Admin B',

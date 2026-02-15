@@ -14,5 +14,13 @@ class ManualGateway implements PaymentGatewayInterface
             'message' => 'Payment recorded manually',
         ];
     }
-}
 
+    public function disburse(float $amount, array $details): array
+    {
+        return [
+            'success' => true,
+            'reference' => 'PAYOUT-' . uniqid(),
+            'message' => 'Disbursement recorded manually',
+        ];
+    }
+}

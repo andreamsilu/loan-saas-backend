@@ -32,9 +32,12 @@ class BorrowerController extends Controller
             'metadata' => 'nullable|array',
         ]);
 
-        $borrower = $this->borrowerService->createBorrower($request->all());
-
-        return response()->json($borrower, 201);
+        try {
+            $borrower = $this->borrowerService->createBorrower($request->all());
+            return response()->json($borrower, 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 
     public function show(Borrower $borrower)
@@ -52,14 +55,21 @@ class BorrowerController extends Controller
             'phone' => 'sometimes|string|max:20',
         ]);
 
-        $updatedBorrower = $this->borrowerService->updateBorrower($borrower, $request->all());
-
-        return response()->json($updatedBorrower);
+        try {
+            $updatedBorrower = $this->borrowerService->updateBorrower($borrower, $request->all());
+            return response()->json($updatedBorrower);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 
     public function blacklist(Borrower $borrower)
     {
-        $blacklisted = $this->borrowerService->blacklistBorrower($borrower);
-        return response()->json($blacklisted);
+        try {
+            $blacklisted = $this->borrowerService->blacklistBorrower($borrower);
+            return response()->json($blacklisted);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 }

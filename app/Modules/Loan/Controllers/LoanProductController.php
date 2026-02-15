@@ -40,9 +40,12 @@ class LoanProductController extends Controller
             'penalty_type' => 'nullable|in:fixed,percentage',
         ]);
 
-        $product = $this->productService->createProduct($request->all());
-
-        return response()->json($product, 201);
+        try {
+            $product = $this->productService->createProduct($request->all());
+            return response()->json($product, 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 
     public function show(LoanProduct $product)
@@ -62,9 +65,12 @@ class LoanProductController extends Controller
             'max_amount' => 'sometimes|numeric|gte:min_amount',
         ]);
 
-        $updatedProduct = $this->productService->updateProduct($product, $request->all());
-
-        return response()->json($updatedProduct);
+        try {
+            $updatedProduct = $this->productService->updateProduct($product, $request->all());
+            return response()->json($updatedProduct);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 
     public function destroy(LoanProduct $product)

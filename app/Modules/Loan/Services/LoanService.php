@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 use App\Modules\Transaction\Services\TransactionService;
+use App\Shared\Services\Payment\PaymentGatewayFactory;
 
 use App\Modules\Loan\Events\LoanApproved;
 use App\Modules\Loan\Events\LoanDisbursed;
@@ -74,6 +75,17 @@ class LoanService
         }
 
         DB::transaction(function () use ($loan) {
+            $tenant = auth()->user()->tenant;
+            $gatewayName = $tenant->settings['payment_gateway'] ?? 'aggregator';
+            $gateway = PaymentGatewayFactory::make($gatewayName);
+            $payoutResult = $gateway->disburse($loan->amount, [
+                'phone' => optional($loan->borrower)->phone,
+                'reference' => $loan->loan_number,
+                'description' => 'Loan disbursement',
+            ]);
+            if (!$payoutResult['success']) {
+                throw new \Exception("Disbursement failed");
+            }
             $schedule = $this->calculateRepaymentSchedule($loan);
             
             $loan->update([
@@ -83,7 +95,6 @@ class LoanService
                 'total_payable' => collect($schedule)->sum('amount'),
             ]);
 
-            // Record Transaction
             $this->transactionService->recordTransaction([
                 'loan_id' => $loan->id,
                 'amount' => $loan->amount,
