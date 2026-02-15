@@ -10,6 +10,8 @@ use Illuminate\Support\Str;
 
 use App\Modules\Transaction\Services\TransactionService;
 use App\Shared\Services\Payment\PaymentGatewayFactory;
+use App\Modules\Subscription\Services\PlanLimitService;
+use App\Modules\Audit\Services\AuditService;
 
 use App\Modules\Loan\Events\LoanApproved;
 use App\Modules\Loan\Events\LoanDisbursed;
@@ -17,14 +19,19 @@ use App\Modules\Loan\Events\LoanDisbursed;
 class LoanService
 {
     protected $transactionService;
+    protected $planLimitService;
+    protected $auditService;
 
-    public function __construct(TransactionService $transactionService)
+    public function __construct(TransactionService $transactionService, PlanLimitService $planLimitService, AuditService $auditService)
     {
         $this->transactionService = $transactionService;
+        $this->planLimitService = $planLimitService;
+        $this->auditService = $auditService;
     }
 
     public function createLoanApplication(array $data)
     {
+        $this->planLimitService->ensureCanCreateLoan();
         $borrower = Borrower::findOrFail($data['borrower_id']);
         
         if ($borrower->isBlacklisted()) {
@@ -61,6 +68,12 @@ class LoanService
         $loan->update([
             'status' => Loan::STATUS_APPROVED,
             'approval_date' => now(),
+        ]);
+
+        $this->auditService->record('loan.approved', [
+            'entity_type' => 'loan',
+            'entity_id' => $loan->id,
+            'new' => ['status' => Loan::STATUS_APPROVED],
         ]);
 
         event(new LoanApproved($loan));
@@ -104,6 +117,12 @@ class LoanService
 
             event(new LoanDisbursed($loan));
         });
+
+        $this->auditService->record('loan.disbursed', [
+            'entity_type' => 'loan',
+            'entity_id' => $loan->id,
+            'new' => ['status' => Loan::STATUS_DISBURSED],
+        ]);
 
         return $loan;
     }

@@ -24,6 +24,16 @@ class OperationalReportService
             ? round((Loan::where('status', Loan::STATUS_OVERDUE)->sum('amount') / $stats['total_portfolio']) * 100, 2)
             : 0;
 
+        $defaults = Loan::where('status', Loan::STATUS_DEFAULTED)->count();
+        $closed = Loan::where('status', Loan::STATUS_CLOSED)->count();
+        $stats['default_rate'] = ($defaults + $closed) > 0 ? round(($defaults / ($defaults + $closed)) * 100, 2) : 0;
+
+        $stats['revenue_breakdown'] = [
+            'fees' => Transaction::where('type', 'fee')->sum('amount'),
+            'penalties' => Transaction::where('type', 'penalty')->sum('amount'),
+            'interest' => max($stats['total_repaid'] - Transaction::where('type', 'repayment')->sum('amount'), 0),
+        ];
+
         return $stats;
     }
 
@@ -33,6 +43,14 @@ class OperationalReportService
             ->select(DB::raw('DATE(transaction_date) as date'), DB::raw('SUM(amount) as total'))
             ->groupBy('date')
             ->orderBy('date', 'asc')
+            ->get();
+    }
+
+    public function getLoanDistributionByProduct()
+    {
+        return DB::table('loans')
+            ->select('loan_product_id', DB::raw('COUNT(*) as count'), DB::raw('SUM(amount) as total'))
+            ->groupBy('loan_product_id')
             ->get();
     }
 }
