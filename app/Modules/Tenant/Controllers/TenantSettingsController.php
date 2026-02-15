@@ -56,6 +56,30 @@ class TenantSettingsController extends Controller
         return response()->json($tenant->settings);
     }
 
+    public function updateSmsConfig(Request $request)
+    {
+        $request->validate([
+            'provider' => 'required|string|in:nextsms',
+            'api_key' => 'required|string',
+            'secret_key' => 'required|string',
+            'from' => 'required|string',
+            'base_url' => 'nullable|string',
+        ]);
+
+        $tenant = auth()->user()->tenant;
+        $settings = $tenant->settings ?? [];
+        $settings['sms'] = $request->only([
+            'provider',
+            'api_key',
+            'secret_key',
+            'from',
+            'base_url',
+        ]);
+        $tenant->update(['settings' => $settings]);
+
+        return response()->json($tenant->settings);
+    }
+
     public function updateDomain(Request $request)
     {
         $request->validate([

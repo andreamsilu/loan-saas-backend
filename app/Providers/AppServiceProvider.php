@@ -14,6 +14,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Shared\Services\TenantManager::class, function ($app) {
             return new \App\Shared\Services\TenantManager();
         });
+
+        $this->app->bind(\App\Shared\Interfaces\SmsGatewayInterface::class, \App\Shared\Services\Sms\NextSmsGateway::class);
     }
 
     /**

@@ -18,6 +18,16 @@ class LoanNotificationListener
             'loan_number' => $event->loan->loan_number,
             'borrower_id' => $event->loan->borrower_id,
         ]);
+
+        $borrower = $event->loan->borrower;
+        if ($borrower && $borrower->phone) {
+            try {
+                $sms = app(\App\Shared\Interfaces\SmsGatewayInterface::class);
+                $sms->send($borrower->phone, "Your loan {$event->loan->loan_number} has been approved.");
+            } catch (\Throwable $e) {
+                Log::error('SMS send failed for loan approved: ' . $e->getMessage());
+            }
+        }
     }
 
     public function handleLoanDisbursed(LoanDisbursed $event)
@@ -29,6 +39,16 @@ class LoanNotificationListener
             'loan_number' => $event->loan->loan_number,
             'borrower_id' => $event->loan->borrower_id,
         ]);
+
+        $borrower = $event->loan->borrower;
+        if ($borrower && $borrower->phone) {
+            try {
+                $sms = app(\App\Shared\Interfaces\SmsGatewayInterface::class);
+                $sms->send($borrower->phone, "Your loan {$event->loan->loan_number} has been disbursed.");
+            } catch (\Throwable $e) {
+                Log::error('SMS send failed for loan disbursed: ' . $e->getMessage());
+            }
+        }
     }
 
     public function handleRepaymentReceived(RepaymentReceived $event)
@@ -41,6 +61,16 @@ class LoanNotificationListener
             'borrower_id' => $event->loan->borrower_id,
             'amount' => $event->amount,
         ]);
+
+        $borrower = $event->loan->borrower;
+        if ($borrower && $borrower->phone) {
+            try {
+                $sms = app(\App\Shared\Interfaces\SmsGatewayInterface::class);
+                $sms->send($borrower->phone, "Payment of {$event->amount} received for loan {$event->loan->loan_number}.");
+            } catch (\Throwable $e) {
+                Log::error('SMS send failed for repayment received: ' . $e->getMessage());
+            }
+        }
     }
 
     public function subscribe($events)
