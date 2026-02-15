@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Shared\Middleware\RoleMiddleware::class,
             'subscription' => \App\Shared\Middleware\SubscriptionStatusMiddleware::class,
             'api.limit' => \App\Shared\Middleware\TenantApiRateLimitMiddleware::class,
+            'api.usage' => \App\Shared\Middleware\ApiUsageLoggingMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
