@@ -20,12 +20,22 @@ class LoanNotificationListener
         ]);
 
         $borrower = $event->loan->borrower;
-        if ($borrower && $borrower->phone) {
-            try {
-                $sms = app(\App\Shared\Interfaces\SmsGatewayInterface::class);
-                $sms->send($borrower->phone, "Your loan {$event->loan->loan_number} has been approved.");
-            } catch (\Throwable $e) {
-                Log::error('SMS send failed for loan approved: ' . $e->getMessage());
+        if ($borrower) {
+            if ($borrower->phone) {
+                try {
+                    $sms = app(\App\Shared\Interfaces\SmsGatewayInterface::class);
+                    $sms->send($borrower->phone, "Your loan {$event->loan->loan_number} has been approved.");
+                } catch (\Throwable $e) {
+                    Log::error('SMS send failed for loan approved: ' . $e->getMessage());
+                }
+            }
+            if ($borrower->email) {
+                try {
+                    $email = app(\App\Shared\Interfaces\EmailSenderInterface::class);
+                    $email->send($borrower->email, 'Loan approved', "Your loan {$event->loan->loan_number} has been approved.");
+                } catch (\Throwable $e) {
+                    Log::error('Email send failed for loan approved: ' . $e->getMessage());
+                }
             }
         }
     }
@@ -41,12 +51,22 @@ class LoanNotificationListener
         ]);
 
         $borrower = $event->loan->borrower;
-        if ($borrower && $borrower->phone) {
-            try {
-                $sms = app(\App\Shared\Interfaces\SmsGatewayInterface::class);
-                $sms->send($borrower->phone, "Your loan {$event->loan->loan_number} has been disbursed.");
-            } catch (\Throwable $e) {
-                Log::error('SMS send failed for loan disbursed: ' . $e->getMessage());
+        if ($borrower) {
+            if ($borrower->phone) {
+                try {
+                    $sms = app(\App\Shared\Interfaces\SmsGatewayInterface::class);
+                    $sms->send($borrower->phone, "Your loan {$event->loan->loan_number} has been disbursed.");
+                } catch (\Throwable $e) {
+                    Log::error('SMS send failed for loan disbursed: ' . $e->getMessage());
+                }
+            }
+            if ($borrower->email) {
+                try {
+                    $email = app(\App\Shared\Interfaces\EmailSenderInterface::class);
+                    $email->send($borrower->email, 'Loan disbursed', "Your loan {$event->loan->loan_number} has been disbursed.");
+                } catch (\Throwable $e) {
+                    Log::error('Email send failed for loan disbursed: ' . $e->getMessage());
+                }
             }
         }
     }
@@ -63,12 +83,22 @@ class LoanNotificationListener
         ]);
 
         $borrower = $event->loan->borrower;
-        if ($borrower && $borrower->phone) {
-            try {
-                $sms = app(\App\Shared\Interfaces\SmsGatewayInterface::class);
-                $sms->send($borrower->phone, "Payment of {$event->amount} received for loan {$event->loan->loan_number}.");
-            } catch (\Throwable $e) {
-                Log::error('SMS send failed for repayment received: ' . $e->getMessage());
+        if ($borrower) {
+            if ($borrower->phone) {
+                try {
+                    $sms = app(\App\Shared\Interfaces\SmsGatewayInterface::class);
+                    $sms->send($borrower->phone, "Payment of {$event->amount} received for loan {$event->loan->loan_number}.");
+                } catch (\Throwable $e) {
+                    Log::error('SMS send failed for repayment received: ' . $e->getMessage());
+                }
+            }
+            if ($borrower->email) {
+                try {
+                    $email = app(\App\Shared\Interfaces\EmailSenderInterface::class);
+                    $email->send($borrower->email, 'Repayment received', "Payment of {$event->amount} received for loan {$event->loan->loan_number}.");
+                } catch (\Throwable $e) {
+                    Log::error('Email send failed for repayment received: ' . $e->getMessage());
+                }
             }
         }
     }

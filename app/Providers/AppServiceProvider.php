@@ -16,6 +16,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(\App\Shared\Interfaces\SmsGatewayInterface::class, \App\Shared\Services\Sms\NextSmsGateway::class);
+        $this->app->bind(\App\Shared\Interfaces\EmailSenderInterface::class, \App\Shared\Services\Email\TenantEmailSender::class);
     }
 
     /**

@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'tenant' => \App\Modules\Tenant\Middleware\TenantMiddleware::class,
             'role' => \App\Shared\Middleware\RoleMiddleware::class,
+            'permission' => \App\Shared\Middleware\PermissionMiddleware::class,
             'subscription' => \App\Shared\Middleware\SubscriptionStatusMiddleware::class,
             'api.limit' => \App\Shared\Middleware\TenantApiRateLimitMiddleware::class,
             'api.usage' => \App\Shared\Middleware\ApiUsageLoggingMiddleware::class,

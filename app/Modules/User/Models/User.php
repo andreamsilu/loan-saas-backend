@@ -4,6 +4,8 @@ namespace App\Modules\User\Models;
 
 use App\Shared\Enums\UserRole;
 use App\Shared\Traits\BelongsToTenant;
+use App\Modules\User\Models\RolePermission;
+use App\Modules\User\Models\UserRoleAssignment;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -85,5 +87,33 @@ class User extends Authenticatable
 
         $roleValue = $roles instanceof UserRole ? $roles->value : $roles;
         return $this->role->value === $roleValue;
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        if ($this->isOwner()) {
+            return true;
+        }
+
+        $tenantId = $this->tenant_id;
+        if (!$tenantId) {
+            return false;
+        }
+
+        $roles = [$this->role->value];
+
+        $extraRoles = UserRoleAssignment::where('tenant_id', $tenantId)
+            ->where('user_id', $this->id)
+            ->pluck('role')
+            ->all();
+
+        if ($extraRoles) {
+            $roles = array_values(array_unique(array_merge($roles, $extraRoles)));
+        }
+
+        return RolePermission::where('tenant_id', $tenantId)
+            ->whereIn('role', $roles)
+            ->where('permission', $permission)
+            ->exists();
     }
 }

@@ -33,7 +33,7 @@ class ApiDocsController extends Controller
                 ['name' => 'Developer'],
                 [
                     'name' => 'Notification',
-                    'description' => 'Outbound notifications via SMS (NextSMS) and webhooks for loan events',
+                    'description' => 'Outbound notifications via SMS, email, and webhooks for loan events',
                 ],
             ],
             'paths' => [
@@ -117,6 +117,133 @@ class ApiDocsController extends Controller
                         'security' => [['sanctum' => []]],
                         'responses' => [
                             '200' => ['description' => 'Current user'],
+                        ],
+                    ],
+                ],
+                '/user/staff' => [
+                    'get' => [
+                        'tags' => ['User'],
+                        'summary' => 'List staff and tenant admins for current tenant',
+                        'security' => [['sanctum' => []]],
+                        'responses' => [
+                            '200' => ['description' => 'List of staff'],
+                        ],
+                    ],
+                ],
+                '/user/staff/{id}/role' => [
+                    'post' => [
+                        'tags' => ['User'],
+                        'summary' => 'Change staff role within tenant',
+                        'security' => [['sanctum' => []]],
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                            ],
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Updated'],
+                            '403' => ['description' => 'Forbidden'],
+                        ],
+                    ],
+                ],
+                '/user/role-permissions' => [
+                    'get' => [
+                        'tags' => ['RolePermission'],
+                        'summary' => 'List role-permissions for current tenant',
+                        'security' => [['sanctum' => []]],
+                        'responses' => [
+                            '200' => ['description' => 'List of role permissions'],
+                        ],
+                    ],
+                    'post' => [
+                        'tags' => ['RolePermission'],
+                        'summary' => 'Assign permission to role for current tenant',
+                        'security' => [['sanctum' => []]],
+                        'responses' => [
+                            '201' => ['description' => 'Created'],
+                        ],
+                    ],
+                ],
+                '/user/role-permissions/{id}' => [
+                    'delete' => [
+                        'tags' => ['RolePermission'],
+                        'summary' => 'Remove permission from role for current tenant',
+                        'security' => [['sanctum' => []]],
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                            ],
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Deleted'],
+                            '403' => ['description' => 'Forbidden'],
+                        ],
+                    ],
+                ],
+                '/user/{id}/roles' => [
+                    'get' => [
+                        'tags' => ['RolePermission'],
+                        'summary' => 'List additional roles assigned to user within tenant',
+                        'security' => [['sanctum' => []]],
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                            ],
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'List of roles'],
+                            '403' => ['description' => 'Forbidden'],
+                        ],
+                    ],
+                    'post' => [
+                        'tags' => ['RolePermission'],
+                        'summary' => 'Assign additional role to user within tenant',
+                        'security' => [['sanctum' => []]],
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                            ],
+                        ],
+                        'responses' => [
+                            '201' => ['description' => 'Created'],
+                            '403' => ['description' => 'Forbidden'],
+                        ],
+                    ],
+                ],
+                '/user/{id}/roles/{role}' => [
+                    'delete' => [
+                        'tags' => ['RolePermission'],
+                        'summary' => 'Remove additional role from user within tenant',
+                        'security' => [['sanctum' => []]],
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                            ],
+                            [
+                                'name' => 'role',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'string'],
+                            ],
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Deleted'],
+                            '403' => ['description' => 'Forbidden'],
                         ],
                     ],
                 ],
