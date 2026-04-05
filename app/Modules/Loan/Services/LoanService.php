@@ -10,7 +10,6 @@ use Illuminate\Support\Str;
 
 use App\Modules\Transaction\Services\TransactionService;
 use App\Shared\Services\Payment\PaymentGatewayFactory;
-use App\Modules\Subscription\Services\PlanLimitService;
 use App\Modules\Audit\Services\AuditService;
 
 use App\Modules\Loan\Events\LoanApproved;
@@ -19,19 +18,16 @@ use App\Modules\Loan\Events\LoanDisbursed;
 class LoanService
 {
     protected $transactionService;
-    protected $planLimitService;
     protected $auditService;
 
-    public function __construct(TransactionService $transactionService, PlanLimitService $planLimitService, AuditService $auditService)
+    public function __construct(TransactionService $transactionService, AuditService $auditService)
     {
         $this->transactionService = $transactionService;
-        $this->planLimitService = $planLimitService;
         $this->auditService = $auditService;
     }
 
     public function createLoanApplication(array $data)
     {
-        $this->planLimitService->ensureCanCreateLoan();
         $borrower = Borrower::findOrFail($data['borrower_id']);
         
         if ($borrower->isBlacklisted()) {

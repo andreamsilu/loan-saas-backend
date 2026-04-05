@@ -11,29 +11,27 @@ class ApiDocsController extends Controller
         $spec = [
             'openapi' => '3.0.3',
             'info' => [
-                'title' => 'Loan SaaS API',
+                'title' => 'Loan Management API',
                 'version' => '1.0.0',
-                'description' => 'Multi-tenant loan SaaS API grouped by module',
+                'description' => 'REST API for borrowers, loan products, loans, repayments, and operational reporting. '
+                    . 'Scope requests with the `X-Tenant-ID` header or tenant host/domain resolution.',
             ],
             'servers' => [
                 [
-                    'url' => rtrim(config('app.url'), '/') . '/api',
+                    'url' => url('/api'),
                 ],
             ],
             'tags' => [
                 ['name' => 'User'],
+                ['name' => 'RolePermission'],
                 ['name' => 'Tenant'],
                 ['name' => 'Borrower'],
                 ['name' => 'Loan'],
-                ['name' => 'Transaction'],
                 ['name' => 'Payment'],
-                ['name' => 'Billing'],
                 ['name' => 'Report'],
-                ['name' => 'Owner'],
-                ['name' => 'Developer'],
                 [
                     'name' => 'Notification',
-                    'description' => 'Outbound notifications via SMS, email, and webhooks for loan events',
+                    'description' => 'Outbound SMS and email for loan lifecycle events',
                 ],
             ],
             'paths' => [
@@ -257,17 +255,6 @@ class ApiDocsController extends Controller
                         ],
                     ],
                 ],
-                '/tenant/subscription/current' => [
-                    'get' => [
-                        'tags' => ['Tenant'],
-                        'summary' => 'Get current tenant subscription info',
-                        'security' => [['sanctum' => []]],
-                        'responses' => [
-                            '200' => ['description' => 'Subscription info'],
-                            '404' => ['description' => 'Not found'],
-                        ],
-                    ],
-                ],
                 '/tenant/settings/branding' => [
                     'post' => [
                         'tags' => ['Tenant'],
@@ -305,26 +292,6 @@ class ApiDocsController extends Controller
                         'security' => [['sanctum' => []]],
                         'responses' => [
                             '200' => ['description' => 'Updated'],
-                        ],
-                    ],
-                ],
-                '/tenant/subscription/billing-cycle' => [
-                    'post' => [
-                        'tags' => ['Tenant'],
-                        'summary' => 'Change tenant billing cycle',
-                        'security' => [['sanctum' => []]],
-                        'responses' => [
-                            '200' => ['description' => 'Updated'],
-                        ],
-                    ],
-                ],
-                '/tenant/subscription/history' => [
-                    'get' => [
-                        'tags' => ['Tenant'],
-                        'summary' => 'Get tenant subscription invoices history',
-                        'security' => [['sanctum' => []]],
-                        'responses' => [
-                            '200' => ['description' => 'List of invoices'],
                         ],
                     ],
                 ],
@@ -451,6 +418,23 @@ class ApiDocsController extends Controller
                             '200' => ['description' => 'Updated'],
                         ],
                     ],
+                    'delete' => [
+                        'tags' => ['Loan'],
+                        'summary' => 'Delete loan product',
+                        'security' => [['sanctum' => []]],
+                        'parameters' => [
+                            [
+                                'name' => 'id',
+                                'in' => 'path',
+                                'required' => true,
+                                'schema' => ['type' => 'integer'],
+                            ],
+                        ],
+                        'responses' => [
+                            '200' => ['description' => 'Deleted'],
+                            '404' => ['description' => 'Not found'],
+                        ],
+                    ],
                 ],
                 '/loan/loans' => [
                     'post' => [
@@ -535,71 +519,6 @@ class ApiDocsController extends Controller
                         ],
                     ],
                 ],
-                '/billing/dashboard' => [
-                    'get' => [
-                        'tags' => ['Billing'],
-                        'summary' => 'Tenant billing dashboard',
-                        'security' => [['sanctum' => []]],
-                        'responses' => [
-                            '200' => ['description' => 'Dashboard metrics'],
-                        ],
-                    ],
-                ],
-                '/billing/invoices' => [
-                    'get' => [
-                        'tags' => ['Billing'],
-                        'summary' => 'List invoices',
-                        'security' => [['sanctum' => []]],
-                        'responses' => [
-                            '200' => ['description' => 'List of invoices'],
-                        ],
-                    ],
-                    'post' => [
-                        'tags' => ['Billing'],
-                        'summary' => 'Create invoice',
-                        'security' => [['sanctum' => []]],
-                        'responses' => [
-                            '201' => ['description' => 'Invoice created'],
-                        ],
-                    ],
-                ],
-                '/billing/invoices/{id}' => [
-                    'get' => [
-                        'tags' => ['Billing'],
-                        'summary' => 'Get invoice',
-                        'security' => [['sanctum' => []]],
-                        'parameters' => [
-                            [
-                                'name' => 'id',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'integer'],
-                            ],
-                        ],
-                        'responses' => [
-                            '200' => ['description' => 'Invoice'],
-                            '404' => ['description' => 'Not found'],
-                        ],
-                    ],
-                ],
-                '/billing/invoices/{id}/mark-paid' => [
-                    'post' => [
-                        'tags' => ['Billing'],
-                        'summary' => 'Mark invoice as paid',
-                        'security' => [['sanctum' => []]],
-                        'parameters' => [
-                            [
-                                'name' => 'id',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'integer'],
-                            ],
-                        ],
-                        'responses' => [
-                            '200' => ['description' => 'Invoice updated'],
-                        ],
-                    ],
-                ],
                 '/report/dashboard' => [
                     'get' => [
                         'tags' => ['Report'],
@@ -617,260 +536,6 @@ class ApiDocsController extends Controller
                         'security' => [['sanctum' => []]],
                         'responses' => [
                             '200' => ['description' => 'Trends'],
-                        ],
-                    ],
-                ],
-                '/owner/tenants' => [
-                    'get' => [
-                        'tags' => ['Owner'],
-                        'summary' => 'List all tenants',
-                        'security' => [['sanctum' => []]],
-                        'responses' => [
-                            '200' => ['description' => 'List of tenants'],
-                        ],
-                    ],
-                    'post' => [
-                        'tags' => ['Owner'],
-                        'summary' => 'Create tenant and admin',
-                        'security' => [['sanctum' => []]],
-                        'responses' => [
-                            '201' => ['description' => 'Tenant created'],
-                        ],
-                    ],
-                ],
-                '/owner/tenants/{id}/plan' => [
-                    'post' => [
-                        'tags' => ['Owner'],
-                        'summary' => 'Set tenant subscription plan',
-                        'security' => [['sanctum' => []]],
-                        'parameters' => [
-                            [
-                                'name' => 'id',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'integer'],
-                            ],
-                        ],
-                        'responses' => [
-                            '201' => ['description' => 'Subscription created'],
-                        ],
-                    ],
-                ],
-                '/owner/tenants/{id}/suspend' => [
-                    'post' => [
-                        'tags' => ['Owner'],
-                        'summary' => 'Suspend tenant',
-                        'security' => [['sanctum' => []]],
-                        'parameters' => [
-                            [
-                                'name' => 'id',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'integer'],
-                            ],
-                        ],
-                        'responses' => [
-                            '200' => ['description' => 'Suspended'],
-                        ],
-                    ],
-                ],
-                '/owner/tenants/{id}/activate' => [
-                    'post' => [
-                        'tags' => ['Owner'],
-                        'summary' => 'Activate tenant',
-                        'security' => [['sanctum' => []]],
-                        'parameters' => [
-                            [
-                                'name' => 'id',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'integer'],
-                            ],
-                        ],
-                        'responses' => [
-                            '200' => ['description' => 'Activated'],
-                        ],
-                    ],
-                ],
-                '/owner/tenants/{id}/billing-cycle' => [
-                    'post' => [
-                        'tags' => ['Owner'],
-                        'summary' => 'Update tenant billing cycle',
-                        'security' => [['sanctum' => []]],
-                        'parameters' => [
-                            [
-                                'name' => 'id',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'integer'],
-                            ],
-                        ],
-                        'responses' => [
-                            '200' => ['description' => 'Updated'],
-                        ],
-                    ],
-                ],
-                '/owner/tenants/{id}/reset-credentials' => [
-                    'post' => [
-                        'tags' => ['Owner'],
-                        'summary' => 'Reset tenant admin password',
-                        'security' => [['sanctum' => []]],
-                        'parameters' => [
-                            [
-                                'name' => 'id',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'integer'],
-                            ],
-                        ],
-                        'responses' => [
-                            '200' => ['description' => 'Password reset'],
-                        ],
-                    ],
-                ],
-                '/owner/analytics/dashboard' => [
-                    'get' => [
-                        'tags' => ['Owner'],
-                        'summary' => 'Owner analytics dashboard',
-                        'security' => [['sanctum' => []]],
-                        'responses' => [
-                            '200' => ['description' => 'Analytics'],
-                        ],
-                    ],
-                ],
-                '/owner/settings' => [
-                    'get' => [
-                        'tags' => ['Owner'],
-                        'summary' => 'Get global settings',
-                        'security' => [['sanctum' => []]],
-                        'responses' => [
-                            '200' => ['description' => 'Settings'],
-                        ],
-                    ],
-                    'post' => [
-                        'tags' => ['Owner'],
-                        'summary' => 'Update global settings',
-                        'security' => [['sanctum' => []]],
-                        'responses' => [
-                            '200' => ['description' => 'Settings updated'],
-                        ],
-                    ],
-                ],
-                '/developer/keys' => [
-                    'get' => [
-                        'tags' => ['Developer'],
-                        'summary' => 'List API keys',
-                        'security' => [['sanctum' => []]],
-                        'responses' => [
-                            '200' => ['description' => 'Keys'],
-                        ],
-                    ],
-                    'post' => [
-                        'tags' => ['Developer'],
-                        'summary' => 'Create API key',
-                        'security' => [['sanctum' => []]],
-                        'responses' => [
-                            '201' => ['description' => 'Key created'],
-                        ],
-                    ],
-                ],
-                '/developer/keys/{id}/rotate' => [
-                    'post' => [
-                        'tags' => ['Developer'],
-                        'summary' => 'Rotate API key',
-                        'security' => [['sanctum' => []]],
-                        'parameters' => [
-                            [
-                                'name' => 'id',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'integer'],
-                            ],
-                        ],
-                        'responses' => [
-                            '200' => ['description' => 'Rotated'],
-                        ],
-                    ],
-                ],
-                '/developer/keys/{id}/revoke' => [
-                    'post' => [
-                        'tags' => ['Developer'],
-                        'summary' => 'Revoke API key',
-                        'security' => [['sanctum' => []]],
-                        'parameters' => [
-                            [
-                                'name' => 'id',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'integer'],
-                            ],
-                        ],
-                        'responses' => [
-                            '200' => ['description' => 'Revoked'],
-                        ],
-                    ],
-                ],
-                '/developer/usage' => [
-                    'get' => [
-                        'tags' => ['Developer'],
-                        'summary' => 'Get recent API usage logs',
-                        'security' => [['sanctum' => []]],
-                        'responses' => [
-                            '200' => ['description' => 'Usage logs'],
-                        ],
-                    ],
-                ],
-                '/developer/webhooks' => [
-                    'get' => [
-                        'tags' => ['Developer', 'Notification'],
-                        'summary' => 'List webhook endpoints',
-                        'security' => [['sanctum' => []]],
-                        'responses' => [
-                            '200' => ['description' => 'Webhooks'],
-                        ],
-                    ],
-                    'post' => [
-                        'tags' => ['Developer', 'Notification'],
-                        'summary' => 'Create webhook endpoint',
-                        'security' => [['sanctum' => []]],
-                        'responses' => [
-                            '201' => ['description' => 'Webhook created'],
-                        ],
-                    ],
-                ],
-                '/developer/webhooks/{id}' => [
-                    'put' => [
-                        'tags' => ['Developer', 'Notification'],
-                        'summary' => 'Update webhook endpoint',
-                        'security' => [['sanctum' => []]],
-                        'parameters' => [
-                            [
-                                'name' => 'id',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'integer'],
-                            ],
-                        ],
-                        'responses' => [
-                            '200' => ['description' => 'Updated'],
-                        ],
-                    ],
-                ],
-                '/developer/webhooks/{id}/logs' => [
-                    'get' => [
-                        'tags' => ['Developer', 'Notification'],
-                        'summary' => 'Get webhook logs',
-                        'security' => [['sanctum' => []]],
-                        'parameters' => [
-                            [
-                                'name' => 'id',
-                                'in' => 'path',
-                                'required' => true,
-                                'schema' => ['type' => 'integer'],
-                            ],
-                        ],
-                        'responses' => [
-                            '200' => ['description' => 'Logs'],
                         ],
                     ],
                 ],
@@ -908,9 +573,14 @@ class ApiDocsController extends Controller
     public function ui()
     {
         $specUrl = url('/docs/openapi.json');
+        $docTitle = 'Loan Management API Docs';
 
         return response(
-            '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Loan SaaS API Docs</title><link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"></head><body><div id="swagger-ui"></div><script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script><script>window.onload=function(){SwaggerUIBundle({url:"' . $specUrl . '",dom_id:"#swagger-ui"});}</script></body></html>',
+            '<!DOCTYPE html><html><head><meta charset="utf-8"><title>'
+            . htmlspecialchars($docTitle, ENT_QUOTES, 'UTF-8')
+            . '</title><link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css"></head><body><div id="swagger-ui"></div><script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script><script>window.onload=function(){SwaggerUIBundle({url:"'
+            . $specUrl
+            . '",dom_id:"#swagger-ui"});}</script></body></html>',
             200,
             ['Content-Type' => 'text/html']
         );

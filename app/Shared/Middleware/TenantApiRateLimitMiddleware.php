@@ -2,7 +2,6 @@
 
 namespace App\Shared\Middleware;
 
-use App\Modules\Subscription\Models\Subscription;
 use App\Shared\Services\TenantManager;
 use Closure;
 use Illuminate\Http\JsonResponse;
@@ -11,11 +10,8 @@ use Illuminate\Support\Facades\RateLimiter;
 
 class TenantApiRateLimitMiddleware
 {
-    protected TenantManager $tenantManager;
-
-    public function __construct(TenantManager $tenantManager)
+    public function __construct(protected TenantManager $tenantManager)
     {
-        $this->tenantManager = $tenantManager;
     }
 
     public function handle(Request $request, Closure $next)
@@ -26,14 +22,13 @@ class TenantApiRateLimitMiddleware
             return $next($request);
         }
 
-        $subscription = Subscription::where('tenant_id', $tenantId)->latest()->with('plan')->first();
-        $plan = $subscription?->plan;
-        $maxPerMinute = $plan?->api_limit_per_minute ?? 60;
+        $maxPerMinute = max(1, (int) config('api.tenant_rate_limit_per_minute', 120));
 
         $key = 'tenant_api:' . $tenantId;
 
         if (RateLimiter::tooManyAttempts($key, $maxPerMinute)) {
             $seconds = RateLimiter::availableIn($key);
+
             return $this->limited($seconds);
         }
 
@@ -45,9 +40,8 @@ class TenantApiRateLimitMiddleware
     protected function limited(int $retryAfter): JsonResponse
     {
         return response()->json([
-            'message' => 'Too many requests for current plan',
+            'message' => 'Too many requests',
             'retry_after_seconds' => $retryAfter,
         ], 429);
     }
 }
-

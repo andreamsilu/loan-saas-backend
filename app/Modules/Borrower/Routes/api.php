@@ -4,7 +4,7 @@ use App\Modules\Borrower\Controllers\BorrowerController;
 use App\Shared\Enums\UserRole;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:sanctum', 'subscription'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/', [BorrowerController::class, 'index']);
     Route::post('/', [BorrowerController::class, 'store']);
     Route::get('/{borrower}', [BorrowerController::class, 'show']);

@@ -18,9 +18,4 @@ class Tenant extends Model
         'is_active' => 'boolean',
         'settings' => 'array',
     ];
-
-    public function subscription()
-    {
-        return $this->hasOne(\App\Modules\Subscription\Models\Subscription::class);
-    }
 }
